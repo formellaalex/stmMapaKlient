@@ -1,8 +1,14 @@
 package com.example.cityklient;
 
+import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.widget.ImageView;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.ksoap2.SoapEnvelope;
@@ -15,17 +21,21 @@ import org.ksoap2.transport.HttpTransportSE;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.util.Base64;
+import java.util.concurrent.ExecutionException;
+
+import butterknife.BindView;
 
 
 public class MapActivity extends AppCompatActivity {
 
     private static final String NAMESPACE = "http://stm/";
     private static final String METHOD_NAME = "getMapFragment";
-    private static final String URL = "http://localhost:8080/mapa_java_ee_8_war_exploded/services/MapFragmentService";
+    private static final String URL = "http://10.0.2.2:8080/mapa_java_ee_8_war_exploded/services/MapFragmentService";
     private static final String SOAP_ACTION = "http://stm//getMapFragment";
     private int x1, x2, y1, y2;
 
-
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,14 +47,27 @@ public class MapActivity extends AppCompatActivity {
         this.y2 = getIntent().getIntExtra("y2", 0);
 
         RequestTask task = new RequestTask();
-        task.execute();
+        try {
+            String base64Image = task.execute().get();
+            byte[] byteImage = (byte[]) Base64.getDecoder().decode(base64Image);
+            Bitmap bmp = BitmapFactory.decodeByteArray(byteImage, 0, byteImage.length);
+            ImageView imageView = findViewById(R.id.imageView);
+            imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, 350,
+                    700, false));
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
-    class RequestTask extends AsyncTask<Void, Void, Void> {
+    class RequestTask extends AsyncTask<Void, Void, String> {
 
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        @SuppressLint("WrongThread")
         @Override
-        protected Void doInBackground(Void... arg) {
+        protected String doInBackground(Void... arg) {
             SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
 
             PropertyInfo propertyInfoArg0 = new PropertyInfo();
@@ -84,6 +107,7 @@ public class MapActivity extends AppCompatActivity {
             SoapPrimitive resultsRequestSOAP = null;
             try {
                 resultsRequestSOAP = (SoapPrimitive) envelope.getResponse();
+                return (String)resultsRequestSOAP.getValue();
             } catch (SoapFault soapFault) {
                 soapFault.printStackTrace();
             }

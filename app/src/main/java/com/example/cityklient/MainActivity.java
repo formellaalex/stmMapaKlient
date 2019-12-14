@@ -52,11 +52,11 @@ public class MainActivity extends AppCompatActivity {
         int x2 = Integer.parseInt(lower_right_x.getText().toString());
         int y2 = Integer.parseInt(lower_right_y.getText().toString());
 
-        //jezeli prawy dolny jest lewym górnym :)
+        //jezeli prawy dolny jest lewym górnym
         if (x2 < x1 || y2 < y1) {
             error_label.setText("Wrong data");
             return;
-        }
+        } 
 
         intent.putExtra("upper_left_x", x1);
         intent.putExtra("upper_left_y", y1);
