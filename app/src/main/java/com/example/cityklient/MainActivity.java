@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -47,28 +48,40 @@ public class MainActivity extends AppCompatActivity {
     void submit() {
         Intent intent = new Intent(this, MapActivity.class);
 
-        int x1 = Integer.parseInt(upper_left_x.getText().toString());
-        int y1 = Integer.parseInt(upper_left_y.getText().toString());
-        int x2 = Integer.parseInt(lower_right_x.getText().toString());
-        int y2 = Integer.parseInt(lower_right_y.getText().toString());
+        final int x1 = Integer.parseInt(upper_left_x.getText().toString());
+        final int y1 = Integer.parseInt(upper_left_y.getText().toString());
+        final int x2 = Integer.parseInt(lower_right_x.getText().toString());
+        final int y2 = Integer.parseInt(lower_right_y.getText().toString());
 
-        //jezeli prawy dolny jest lewym górnym
         if (x2 < x1 || y2 < y1) {
-            error_label.setText("Wrong data");
+            Toast.makeText(
+                    MainActivity.this,
+                    "Lewy górny róg nie może być poniżej prawego dolnego rogu.",
+                    Toast.LENGTH_SHORT
+            ).show();
             return;
-        } 
+        }
+        if (x1 > 982 || x2 > 982 || y1 > 982 || y2 > 982) {
+            Toast.makeText(
+                    MainActivity.this,
+                    "Wartości nie mogą być większe niz 982 pikseli",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return;
+        }
 
-        intent.putExtra("upper_left_x", x1);
-        intent.putExtra("upper_left_y", y1);
+        intent.putExtra("x1", x1);
+        intent.putExtra("y1", y1);
         intent.putExtra("x2", x2);
         intent.putExtra("y2", y2);
 
         PackageManager packageManager = MainActivity.this.getPackageManager();
         if (intent.resolveActivity(packageManager) != null) {
-                startActivity(intent);
+            startActivity(intent);
         } else {
             Log.d(TAG, "Activity not handled for: " + intent.getData());
         }
+
     }
 
     @Override
